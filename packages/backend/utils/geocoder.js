@@ -29,17 +29,17 @@ export async function geocodeLocation(location) {
     return cached;
   }
 
-  const apiKey = "AIzaSyB1UrV-jk3CEv4uyH7f6Uhg_66da8F_w9I";
+  const apiKey = require("./geocodekey.json").key;
 
   try {
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-      location
+      location,
     )}&key=${apiKey}`;
 
     const response = await fetch(url);
     if (!response.ok) {
       console.error(
-        `Geocoder: HTTP error ${response.status} for "${location}"`
+        `Geocoder: HTTP error ${response.status} for "${location}"`,
       );
       return null;
     }
@@ -57,13 +57,13 @@ export async function geocodeLocation(location) {
       // Cache the result
       geocodeCache.set(normalized, geocoded);
       console.log(
-        `Geocoder: Successfully geocoded "${location}" -> ${geocoded.lat}, ${geocoded.lng}`
+        `Geocoder: Successfully geocoded "${location}" -> ${geocoded.lat}, ${geocoded.lng}`,
       );
 
       return geocoded;
     } else {
       console.warn(
-        `Geocoder: Failed to geocode "${location}", status: ${data.status}`
+        `Geocoder: Failed to geocode "${location}", status: ${data.status}`,
       );
       // Cache null to avoid repeated failed requests
       geocodeCache.set(normalized, null);

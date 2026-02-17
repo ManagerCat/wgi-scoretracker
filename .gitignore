@@ -141,3 +141,6 @@ vite.config.ts.timestamp-*
 # GCloud Service Key
 wgiscoreapp-c0f8f08ebe54.json
 wgiscoreapp-*.json
+
+# Google Maps API Key
+geocodekey.json
