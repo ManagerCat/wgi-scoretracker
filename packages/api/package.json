@@ -1,0 +1,15 @@
+{
+  "name": "wgi-scoretracker-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx functions-framework --target=apiGet [--signature-type=http]"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "firebase-admin": "^13.6.0",
+    "@google-cloud/functions-framework": "^5.0.0"
+  }
+}

@@ -1,0 +1,89 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Start Firestore Emulator",
+            "type": "shell",
+            "command": "firebase emulators:start --only firestore",
+            "options": {
+                "cwd": "${workspaceFolder}/packages/backend",
+                "shell": {
+                    "executable": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+                    "args": ["-NoProfile","-NoLogo","-Command"]
+                }
+            },
+            "presentation": { "panel": "dedicated", "reveal": "always", "showReuseMessage": false },
+            "problemMatcher": []
+        },
+        {
+            "label": "Serve Website (Vite)",
+            "type": "shell",
+            "command": "npm run dev",
+            "options": {
+                "cwd": "${workspaceFolder}/packages/website",
+                "shell": {
+                    "executable": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+                    "args": ["-NoProfile","-NoLogo","-Command"]
+                }
+            },
+            "presentation": { "panel": "shared", "reveal": "always", "showReuseMessage": false },
+            "problemMatcher": []
+        },
+        {
+            "label": "Start API",
+            "type": "shell",
+            "command": "$env:FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080'; Write-Host 'FIRESTORE_EMULATOR_HOST set to 127.0.0.1:8080'; npm start",
+            "options": {
+                "cwd": "${workspaceFolder}/packages/api",
+                "shell": {
+                    "executable": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+                    "args": ["-NoProfile","-NoLogo","-Command"]
+                }
+            },
+            "presentation": { "panel": "shared", "reveal": "always", "showReuseMessage": false },
+            "problemMatcher": []
+        },
+        {
+            "label": "Open Emulator UI",
+            "type": "shell",
+            "command": "Start-Process 'http://localhost:4000'",
+            "options": { "cwd": "${workspaceFolder}" },
+            "presentation": { "panel": "shared", "reveal": "silent" },
+            "problemMatcher": []
+        },
+        {
+            "label": "Open Website",
+            "type": "shell",
+            "command": "Start-Sleep -Seconds 1; Start-Process 'http://localhost:3000'",
+            "options": {
+                "cwd": "${workspaceFolder}/packages/website",
+                "shell": {
+                    "executable": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+                    "args": ["-NoProfile","-NoLogo","-Command"]
+                }
+            },
+            "presentation": { "panel": "shared", "reveal": "silent", "showReuseMessage": false },
+            "problemMatcher": []
+        },
+        {
+            "label": "Dev Terminal (Emulator Env)",
+            "type": "shell",
+            "command": "$env:FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080'; Write-Host 'FIRESTORE_EMULATOR_HOST set to 127.0.0.1:8080'; node index.js",
+            "options": {
+                "cwd": "${workspaceFolder}/packages/backend",
+                "shell": {
+                    "executable": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+                    "args": ["-NoExit","-NoProfile","-NoLogo","-Command"]
+                }
+            },
+            "presentation": { "panel": "shared", "reveal": "always", "showReuseMessage": false },
+            "problemMatcher": []
+        },
+        {
+            "label": "Start Dev",
+            "dependsOn": ["Start Firestore Emulator","Start API","Serve Website (Vite)","Open Emulator UI","Dev Terminal (Emulator Env)","Open Website"],
+            "dependsOrder": "parallel",
+            "problemMatcher": []
+        }
+    ]
+}

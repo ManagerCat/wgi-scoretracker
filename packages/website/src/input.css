@@ -1,0 +1,232 @@
+@import "tailwindcss";
+
+/* Preserve original site styles below so the visual appearance is unchanged.
+   When you run `npm run build:css` this file will be processed by Tailwind
+   and emitted to `styles.css`. */
+
+:root{
+  --bg:#f7fafc;
+  --card:#fff;
+  --muted:#6b7280;
+  --accent:#0ea5a4;
+  --border:#e6edf0;
+
+  /* shadcn-style tokens mapped to existing palette */
+  --foreground:#0f172a;
+  --card-foreground:#0f172a;
+  --primary:var(--accent);
+  --primary-foreground:#ffffff;
+  --secondary:#f1f5f9;
+  --secondary-foreground:#0f172a;
+  --muted-bg:#f1f5f9;
+  --accent-foreground:#ffffff;
+  --destructive:#ef4444;
+  --destructive-foreground:#ffffff;
+  --input:var(--border);
+  --ring:var(--accent);
+  --radius:0.5rem;
+}
+*{box-sizing:border-box}
+body{font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:var(--bg);color:#0f172a}
+.site-header{background:linear-gradient(90deg,#ffffffcc, #f1f5f9cc);padding:20px;border-bottom:1px solid var(--border)}
+.site-header h1{margin:0;font-size:1.25rem}
+.subtitle{margin:4px 0 0;color:var(--muted);font-size:0.9rem}
+
+/* Map button in header */
+.site-header{position:relative}
+.map-button{position:absolute;right:12px;top:18px;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--accent);text-decoration:none}
+.map-button svg{width:20px;height:20px}
+.map-button:focus,.map-button:hover{background:var(--accent);color:white;border-color:var(--accent);transform:translateY(-1px)}
+.container{max-width:1000px;margin:28px auto;padding:0 16px;display:grid;grid-template-columns:1fr;gap:24px}
+section h2{margin:0 0 12px;font-size:1.05rem}
+.list{display:flex;flex-direction:column;gap:10px}
+.controls{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.controls label{font-size:0.85rem;color:var(--muted)}
+.controls select{padding:6px;border:1px solid var(--border);border-radius:6px;background:white}
+.controls button{padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--accent);color:white}
+.sort-btn{padding:6px 10px;border-radius:999px;border:1px solid rgba(14,165,164,0.12);background:transparent;color:var(--accent);font-weight:600;cursor:pointer}
+.sort-btn[aria-pressed="true"],.sort-btn:focus,.sort-btn:hover{background:var(--accent);color:white;border-color:var(--accent);transform:translateY(-1px)}
+.card{background:var(--card);padding:12px;border-radius:8px;border:1px solid var(--border);box-shadow:0 1px 2px rgba(15,23,42,0.03)}
+.card .meta{color:var(--muted);font-size:0.85rem;margin-bottom:6px}
+/* Add small spacing between the card title (first child) and the meta/date line */
+.card > div:first-child{margin-bottom:8px}
+.date-chips{display:flex;flex-wrap:wrap}
+
+/* Calendar widget styles */
+.calendar{display:inline-block;background:var(--card);border:1px solid var(--border);padding:10px;border-radius:8px}
+.calendar .cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.calendar .cal-header button{background:transparent;border:1px solid var(--border);padding:6px;border-radius:6px}
+.calendar .cal-grid{display:grid;grid-template-columns:repeat(7,32px);gap:6px;justify-items:center}
+.calendar .cal-day{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:var(--muted);font-size:0.85rem}
+.calendar .cal-day.disabled{opacity:0.25}
+.calendar .cal-day.valid{background:transparent;color:inherit;border:1px dashed transparent}
+.calendar .cal-day.valid.active{background:var(--accent);color:white;border-color:transparent}
+.calendar .cal-weekdays{display:grid;grid-template-columns:repeat(7,32px);gap:6px;margin-bottom:6px;font-size:0.75rem;color:var(--muted);justify-items:center}
+
+@media (max-width:600px){
+  .calendar .cal-grid,.calendar .cal-weekdays{grid-template-columns:repeat(7,28px)}
+  .calendar .cal-day{width:28px;height:28px}
+}
+
+/* Responsive adjustments for events panel and toggle on small screens */
+@media (max-width:480px) {
+  #events-panel {
+    /* make the panel inset with space on left/right and limit height */
+    width: calc(100% - 24px) !important;
+    right: 12px !important;
+    left: 12px !important;
+    /* move fully off-screen including the right inset so no sliver shows */
+    transform: translateX(calc(100% + 12px));
+    max-height: 72vh;
+    height: auto !important;
+    border-radius: 10px;
+    padding: 8px;
+    box-shadow: 0 6px 18px rgba(2,6,23,0.12);
+  }
+  /* Ensure open state slides into view fully on small screens */
+  #events-panel[aria-hidden="false"] {
+    transform: translateX(0) !important;
+  }
+  /* Keep toggle visible and slightly inset from right edge */
+  #events-toggle {
+    right: 18px !important;
+    top: 12px !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 8px !important;
+  }
+}
+
+/* Popover for calendar */
+.calendar-popover{position:relative}
+.calendar-popover .calendar{position:absolute;z-index:30;top:8px;left:0;box-shadow:0 8px 24px rgba(2,6,23,0.12)}
+.calendar-popover[aria-hidden="true"]{display:none}
+.calendar-popover[aria-hidden="false"]{display:block}
+
+/* Toggle button style match */
+/* Calendar toggle: white background but dark/accent text for contrast */
+#event-calendar-toggle{padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:white;color:var(--accent)}
+
+/* Calendar header nav buttons (prev/next) live inside .controls so ensure they have visible text */
+.calendar .cal-header button{color:var(--muted)}
+
+/* Filters panel (hidden by default) */
+.filters-panel{display:none;margin-bottom:8px}
+.filters-panel.open{display:block}
+.filter-toggle{margin-left:8px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:white}
+
+/* Group row layout used when division filter is active */
+.card.row{display:flex;align-items:center;gap:12px}
+.card.row .rank{width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:#f1f5f9;border-radius:6px;font-weight:700;color:var(--accent);border:1px solid var(--border)}
+.card.row .content{flex:1}
+.card.row .content .meta{margin:0 0 6px}
+.card.row .scores{font-size:0.9rem;color:var(--muted)}
+.site-footer{max-width:1000px;margin:18px auto;padding:0 16px;color:var(--muted);font-size:0.85rem}
+@media(min-width:720px){.container{grid-template-columns:1fr 1fr}}
+
+/* Full-bleed table used on event detail pages so recap tables span the viewport */
+.full-bleed{
+  position:relative;
+
+  box-sizing:border-box;
+  /* give a modest side padding so content doesn't touch the viewport edge */
+  padding:12px 16px;
+  width: 100%;
+  /* inherit the same max-width as the parent container so the full-bleed
+     band exactly matches the content column width */
+  max-width: inherit;
+  background:var(--card);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.full-bleed .meta{margin-bottom:8px;font-size:1rem}
+.full-bleed table{
+  /* Keep the table constrained to the main container width and centered.
+     This prevents horizontal overflow while keeping the main content centered
+     with a small margin on each side. */
+  width:auto;
+  max-width:100%;
+  margin:0 auto;
+  table-layout:auto;
+}
+
+.full-bleed.table-responsive {
+  /* optional helper class to force the inner table to fill the band */
+  width:100%;
+  table-layout:auto;
+  white-space:normal;
+}
+.full-bleed th, .full-bleed td {
+  white-space:normal;
+  word-break:break-word;
+  overflow-wrap:anywhere;
+  min-width:0; /* allow cells to shrink below their content width */
+  padding:6px;
+}
+.full-bleed th{font-weight:600}
+@media (max-width:720px){
+  .full-bleed table{font-size:0.95rem}
+}
+
+/* Quick links bar for recap divisions */
+.quick-links{
+  display:flex;
+  gap:8px;
+  flex-wrap:nowrap;
+  overflow-x:auto;
+  padding:8px 12px;
+  margin:12px auto;
+  justify-content:center;
+  align-items:center;
+  max-width:1000px;
+  border-radius:12px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(248,250,251,0.85));
+  border:1px solid var(--border);
+}
+.quick-links .quick-link{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:transparent;color:var(--accent);border:1px solid rgba(14,165,164,0.12);text-decoration:none;white-space:nowrap;font-weight:600;font-size:0.85rem}
+.quick-links .quick-link:focus,.quick-links .quick-link:hover{background:var(--accent);color:white;border-color:var(--accent);transform:translateY(-1px)}
+
+/* Make the quick-links bar sticky so it remains visible while scrolling */
+.quick-links{
+  position:sticky;
+  top:16px; /* small offset from viewport top */
+  z-index:50;
+  /* keep background consistent with band but reduce shadow when sticky */
+  background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(248,250,251,0.95));
+  padding:10px 12px; /* slightly larger vertical touch area when sticky */
+  margin-bottom:12px;
+  box-shadow:0 1px 4px rgba(2,6,23,0.04);
+  justify-content:center;
+}
+
+/* Pager controls (used by client-side pagination) */
+.pager{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:12px}
+.pager .page-info{color:var(--muted);font-size:0.9rem;padding:0 8px}
+.pager button{padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--accent);font-weight:600;cursor:pointer;transition:transform .08s ease,background .12s ease}
+.pager button:hover,.pager button:focus{background:var(--accent);color:white;border-color:var(--accent);transform:translateY(-1px);outline:none;box-shadow:0 4px 10px rgba(14,165,164,0.12)}
+.pager button[disabled]{opacity:0.55;transform:none;cursor:default;background:transparent;color:var(--muted);border-color:var(--border);box-shadow:none}
+
+/* Smooth scroll to anchors */
+html { scroll-behavior: smooth; }
+
+/* Ensure the event/group detail containers can span the viewport so
+   full-bleed recap bands align with the page edges. Kept narrowly
+   scoped to these detail placeholders to avoid changing site layout. */
+#event-detail, #group-detail {
+  /* Match the `.container` content width and padding so detail blocks
+     align with the main page content. */
+  display:block;
+  width:100%;
+  max-width:1000px;
+  margin:0 auto;
+  box-sizing:border-box;
+  /* Use the same horizontal padding as `.container` so inner content lines up */
+  padding:0 16px;
+  /* In the site-wide `.container` we use a two-column layout on wider
+     screens (events + groups). On detail pages we want the detail block
+     to span the full content column; forcing it to span all grid columns
+     ensures it occupies the full width of the container. */
+  grid-column: 1 / -1;
+}

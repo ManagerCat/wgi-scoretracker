@@ -1,0 +1,20 @@
+{
+  "circuits": [
+    { "name": "WGI", "color": "#9DB791" },
+    { "name": "NCPA", "color": "#0A375F" },
+    { "name": "SCPA", "color": "#E61E25" },
+    { "name": "FFCC", "color": "#FFE300" },
+    { "name": "GIPA", "color": "#7C3AED" }
+  ],
+  "divisions": [
+    "Percussion Independent World",
+    "Percussion Scholastic World",
+    "Percussion Independent Open",
+    "Percussion Scholastic Open",
+    "Percussion Independent A",
+    "Percussion Scholastic A",
+    "Percussion Concert World",
+    "Percussion Concert Open",
+    "Percussion Concert A"
+  ]
+}

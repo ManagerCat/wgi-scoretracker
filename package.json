@@ -1,0 +1,14 @@
+{
+  "name": "wgi-scoretracker-monorepo",
+  "private": true,
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "dev": "npm --workspace packages/website run dev",
+    "start:api": "npm --workspace packages/api run start",
+    "start:backend": "npm --workspace packages/backend run start",
+    "start:all": "concurrently \"npm run start:api\" \"npm run start:backend\" \"npm run dev\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
