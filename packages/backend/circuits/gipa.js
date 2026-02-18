@@ -22,12 +22,21 @@ export async function getScore() {
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
   );
   // Navigate to the live site and try to open the Scores view.
-  await page.goto("https://www.gipacircuit.com/", {
-    waitUntil: "networkidle2",
-    timeout: 60000,
-  });
+  await page.goto("https://www.gipacircuit.com/");
   await page.setViewport({ width: 1280, height: 900 });
-
+  await page.waitForNetworkIdle({
+    //this could work but its gotta be tuned properly and i don't wanna do it rn
+    concurrency: 1,
+    idleTime: 600,
+    timeout: 30000,
+  });
+  // await new Promise((r) => setTimeout(r, 2000)); // jank, wait for view to fully render
+  await page.waitForSelector(
+    "xpath=//a[div/div/p[normalize-space()='SCORES']]",
+    {
+      timeout: 10000,
+    },
+  );
   // Try to click the 'SCORES' link using an XPath match (case-insensitive).
   try {
     // Dispatch a click from within the page to ensure JS-driven handlers run.
@@ -39,12 +48,21 @@ export async function getScore() {
         XPathResult.FIRST_ORDERED_NODE_TYPE,
         null,
       ).singleNodeValue;
-      if (a) a.click();
+      if (a) {
+        a.click();
+
+        console.log("GIPA: Clicked SCORES link via XPath");
+      } else {
+        console.log(
+          "GIPA: SCORES link not found via XPath, proceeding with extraction...",
+        );
+      }
     });
-    // allow time for the scores view to render
-    await new Promise((r) => setTimeout(r, 2000));
   } catch (e) {
     // non-fatal — proceed to extraction and retry logic below
+    console.log(
+      "GIPA: Failed to click SCORES link, proceeding with extraction anyway...",
+    );
     await new Promise((r) => setTimeout(r, 1500));
   }
 
@@ -60,6 +78,9 @@ export async function getScore() {
       { timeout: 15000 },
     );
   } catch (e) {
+    console.log(
+      "GIPA: No recap anchors found after waiting, proceeding with extraction anyway...",
+    );
     // timed out waiting for recap anchors; we'll still try extraction below
   }
 
@@ -206,8 +227,32 @@ export async function getScore() {
       attempt++
     ) {
       try {
-        await page.reload({ waitUntil: "networkidle2", timeout: 30000 });
+        console.log(
+          `GIPA: Retry attempt ${attempt} for extracting recap links...`,
+        );
+        await page.reload({ waitUntil: "networkidle0", timeout: 30000 });
         await new Promise((r) => setTimeout(r, 1200 * attempt));
+
+        // Click the SCORES link again
+        try {
+          await page.evaluate(() => {
+            const a = document.evaluate(
+              "//a[div/div/p[normalize-space()='SCORES']]",
+              document,
+              null,
+              XPathResult.FIRST_ORDERED_NODE_TYPE,
+              null,
+            ).singleNodeValue;
+            if (a) {
+              a.click();
+              console.log("GIPA: Clicked SCORES link via XPath (retry)");
+            }
+          });
+          await new Promise((r) => setTimeout(r, 1000));
+        } catch (e) {
+          console.log("GIPA: Failed to click SCORES link on retry attempt");
+        }
+
         const retryLinks = await page.evaluate(() => {
           function looksLikeHeaderText(s) {
             if (!s) return false;
@@ -326,15 +371,15 @@ export async function getScore() {
         });
         links = Array.isArray(retryLinks) ? retryLinks : links;
       } catch (e) {
-        // swallow and retry
+        console.error(`GIPA: Retry attempt ${attempt} failed with error:`, e);
       }
     }
   }
 
-  await browser.close();
-
   console.log("GIPA: Finished Scraping Event Links", (links || []).length);
-  console.log(links);
+
+  await browser.close();
+  // return links; // for testing without recap processing
 
   console.log("GIPA: Processing Recaps...");
 
