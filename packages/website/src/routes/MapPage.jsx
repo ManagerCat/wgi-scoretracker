@@ -17,7 +17,7 @@ let circuitColorsCache = null;
 // Dynamically load Leaflet CSS/JS and return the global L object
 async function loadLeaflet() {
   if (window.L) return window.L;
-  
+
   const cssHref = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
   if (!document.querySelector(`link[href="${cssHref}"]`)) {
     await new Promise((resolve) => {
@@ -30,7 +30,7 @@ async function loadLeaflet() {
       document.head.appendChild(link);
     });
   }
-  
+
   const src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
   if (!document.querySelector(`script[src="${src}"]`)) {
     await new Promise((resolve, reject) => {
@@ -42,32 +42,34 @@ async function loadLeaflet() {
       document.head.appendChild(s);
     });
   }
-  
+
   // Wait for window.L to be available (with timeout)
   const maxAttempts = 50; // 5 seconds max
   for (let i = 0; i < maxAttempts; i++) {
     if (window.L) return window.L;
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
-  
+
   throw new Error("Leaflet failed to initialize");
 }
 
 function getCircuitColor(circuit) {
   if (!circuit) return "#4B5563";
-  
+
   // Return cached colors if available
   if (circuitColorsCache) {
     const key = String(circuit).trim().toUpperCase();
     const colorEntry = circuitColorsCache.find(
-      (c) => c.name.toUpperCase() === key
+      (c) => c.name.toUpperCase() === key,
     );
     const color = colorEntry ? colorEntry.color : "#4B5563";
     // console.log(`[getCircuitColor] Circuit: ${circuit}, Key: ${key}, Color: ${color}, Found: ${!!colorEntry}`);
     return color;
   }
-  
-  console.log(`[getCircuitColor] Circuit: ${circuit}, Cache not loaded yet, returning default`);
+
+  console.log(
+    `[getCircuitColor] Circuit: ${circuit}, Cache not loaded yet, returning default`,
+  );
   return "#4B5563";
 }
 
@@ -93,12 +95,12 @@ export default function MapPage() {
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
   const [circuitFilter, setCircuitFilter] = useState("");
+  const [leafletReady, setLeafletReady] = useState(false);
   const [searchParams] = useSearchParams();
 
   const mapRef = useRef(null);
   const markersRef = useRef(null);
   const markersById = useRef(new Map());
-  const leafletReady = useRef(false);
 
   // Load circuit colors from config.json
   useEffect(() => {
@@ -114,7 +116,10 @@ export default function MapPage() {
         console.log("[loadConfig] Config loaded:", config);
         if (config.circuits && Array.isArray(config.circuits)) {
           circuitColorsCache = config.circuits;
-          console.log("[loadConfig] Circuit colors cache populated:", circuitColorsCache);
+          console.log(
+            "[loadConfig] Circuit colors cache populated:",
+            circuitColorsCache,
+          );
         } else {
           console.log("[loadConfig] No circuits array found in config");
         }
@@ -128,109 +133,135 @@ export default function MapPage() {
   useEffect(() => {
     let mounted = true;
     let mapInstance = null;
-    
+
     async function initMap() {
       try {
         console.log("[initMap] Starting map initialization");
         const L = await loadLeaflet();
         console.log("[initMap] Leaflet loaded successfully");
         if (!mounted) return;
-        
+
         // Wait a bit more to ensure CSS and DOM are ready
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         if (!mounted) return;
-        
+
         // Retry logic to find container and ensure it's ready
         let container = null;
         let attempts = 0;
         const maxAttempts = 30; // 1.5 seconds total
-        
+
         while (attempts < maxAttempts) {
           container = document.getElementById("map");
-          if (container && container.offsetWidth > 0 && container.offsetHeight > 0) {
-            console.log("[initMap] Container ready:", container.offsetWidth, "x", container.offsetHeight);
+          if (
+            container &&
+            container.offsetWidth > 0 &&
+            container.offsetHeight > 0
+          ) {
+            console.log(
+              "[initMap] Container ready:",
+              container.offsetWidth,
+              "x",
+              container.offsetHeight,
+            );
             break;
           }
           if (attempts === 0) {
             console.log("[initMap] Container not ready yet, waiting...");
           }
           attempts++;
-          await new Promise(resolve => setTimeout(resolve, 50));
+          await new Promise((resolve) => setTimeout(resolve, 50));
         }
-        
-        if (!container || container.offsetWidth === 0 || container.offsetHeight === 0) {
+
+        if (
+          !container ||
+          container.offsetWidth === 0 ||
+          container.offsetHeight === 0
+        ) {
           const msg = `Map container check failed: exists=${!!container}, dims=${container ? container.offsetWidth + "x" + container.offsetHeight : "N/A"}`;
           setError("Map container not ready");
           console.error("[initMap]", msg);
           return;
         }
-        
-        console.log("[initMap] Map container validated after", attempts, "attempts, creating instance");
-        
+
+        console.log(
+          "[initMap] Map container validated after",
+          attempts,
+          "attempts, creating instance",
+        );
+
         if (!mounted) return;
-        
+
         // Remove any existing Leaflet instance
         if (container._leaflet_id) {
           console.log("[initMap] Removing existing Leaflet instance");
           delete container._leaflet_id;
         }
-        
+
         // Create map with error handling
-        console.log("[initMap] Creating Leaflet map instance with container validation");
-        
+        console.log(
+          "[initMap] Creating Leaflet map instance with container validation",
+        );
+
         // Final validation: container exists, is in DOM, and has dimensions
-        if (!container || !document.body.contains(container) || container.offsetWidth === 0 || container.offsetHeight === 0) {
+        if (
+          !container ||
+          !document.body.contains(container) ||
+          container.offsetWidth === 0 ||
+          container.offsetHeight === 0
+        ) {
           const msg = `Map container invalid before L.map(): exists=${!!container}, inDOM=${container ? document.body.contains(container) : false}, dims=${container ? container.offsetWidth + "x" + container.offsetHeight : "N/A"}`;
           console.error("[initMap]", msg);
           setError("Map container not ready");
           return;
         }
-        
-        console.log("[initMap] Final container validation passed, calling L.map()");
-        
+
+        console.log(
+          "[initMap] Final container validation passed, calling L.map()",
+        );
+
         try {
           mapInstance = L.map(container, {
             center: [39.5, -98.35],
             zoom: 4,
             scrollWheelZoom: true,
-            tap: false
+            tap: false,
           });
         } catch (mapErr) {
           console.error("[initMap] Failed to create map instance:", mapErr);
           throw mapErr;
         }
-        
+
         console.log("[initMap] Map instance created successfully");
-        
+
         // Verify map instance is valid before adding layers
-        if (!mapInstance || typeof mapInstance.addLayer !== 'function') {
+        if (!mapInstance || typeof mapInstance.addLayer !== "function") {
           throw new Error("Map instance is invalid");
         }
-        
+
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           maxZoom: 19,
           attribution: "&copy; OpenStreetMap contributors",
         }).addTo(mapInstance);
-        
+
         const layer = L.layerGroup().addTo(mapInstance);
-        
+
         if (!mounted) {
           mapInstance.remove();
           return;
         }
-        
+
         mapRef.current = mapInstance;
         markersRef.current = layer;
-        leafletReady.current = true;
+        setLeafletReady(true);
         console.log("[initMap] Map initialization complete");
-        
+
         // Ensure map container is visible
         const mapContainer = document.getElementById("map");
         if (mapContainer) {
           mapContainer.style.backgroundColor = "white";
           mapContainer.style.opacity = "1";
         }
-        
+
         // Invalidate size to ensure proper rendering
         setTimeout(() => {
           if (mounted && mapInstance) {
@@ -249,13 +280,13 @@ export default function MapPage() {
         }
       }
     }
-    
+
     initMap();
-    
+
     return () => {
       mounted = false;
-      leafletReady.current = false;
-      
+      setLeafletReady(false);
+
       if (mapInstance) {
         try {
           mapInstance.remove();
@@ -263,7 +294,7 @@ export default function MapPage() {
           console.warn("Error removing map:", e);
         }
       }
-      
+
       mapRef.current = null;
       markersRef.current = null;
     };
@@ -279,7 +310,9 @@ export default function MapPage() {
           try {
             docs = await fetchCollection(name);
             if (docs.length) {
-              console.log(`[loadEvents] Loaded ${docs.length} events from collection "${name}"`);
+              console.log(
+                `[loadEvents] Loaded ${docs.length} events from collection "${name}"`,
+              );
               break;
             }
           } catch (e) {
@@ -287,7 +320,11 @@ export default function MapPage() {
           }
         }
         setEvents(docs);
-        console.log("[loadEvents] Events state updated with", docs.length, "events");
+        console.log(
+          "[loadEvents] Events state updated with",
+          docs.length,
+          "events",
+        );
       } catch (err) {
         setError(err.message || "Failed to load events.");
         console.error("[loadEvents] Error:", err);
@@ -300,12 +337,37 @@ export default function MapPage() {
 
   // Add markers whenever events change and Leaflet is ready
   useEffect(() => {
-    console.log("[markers effect] leafletReady:", leafletReady.current, "events count:", events.length);
-    if (!leafletReady.current || !mapRef.current || !markersRef.current) {
-      console.log("[markers effect] Skipping - not ready or no events");
+    console.log(
+      "[markers effect] leafletReady:",
+      leafletReady,
+      "events count:",
+      events.length,
+    );
+    console.log(
+      "[markers effect] mapRef.current:",
+      !!mapRef.current,
+      "markersRef.current:",
+      !!markersRef.current,
+    );
+    if (!leafletReady || !mapRef.current || !markersRef.current) {
+      console.log(
+        "[markers effect] Skipping - leafletReady:",
+        leafletReady,
+        "mapRef:",
+        !!mapRef.current,
+        "markersRef:",
+        !!markersRef.current,
+      );
       return;
     }
+
+    console.log("[markers effect] window.L available:", !!window.L);
     const L = window.L;
+    if (!L) {
+      console.error("[markers effect] window.L is not available!");
+      return;
+    }
+
     markersRef.current.clearLayers();
     markersById.current.clear();
     console.log(`[markers effect] Adding ${events.length} markers`);
@@ -314,14 +376,19 @@ export default function MapPage() {
       const id = ev.id || ev._id || ev.key;
       const coords = getEventCoordinates(ev);
       if (!coords) {
-        console.log(`[markers effect] No coords for event ${id}`);
+        console.log(`[markers effect] No coords for event ${id}`, ev);
         return;
       }
+      console.log(`[markers effect] Got coords for ${id}:`, coords);
+      console.log(`[markers effect] Got coords for ${id}:`, coords);
       const m = L.marker([coords.lat, coords.lng], {
         icon: getPinIcon(L, getCircuitColor(ev.circuit)),
       }).addTo(markersRef.current);
+      console.log(`[markers effect] Added marker for ${id}`);
 
-      const title = ev.circuit ? `${ev.circuit}: ${ev.name || ev.id}` : ev.name || ev.id;
+      const title = ev.circuit
+        ? `${ev.circuit}: ${ev.name || ev.id}`
+        : ev.name || ev.id;
       const dateText = getEventDateText(ev);
       const locText = coords.formatted_address || getEventLocation(ev) || "";
       const totalCaption = getEventTotalCaption(ev);
@@ -335,7 +402,7 @@ export default function MapPage() {
         popup += `<div style="margin-top:6px" class="meta">Total caption: ${totalCaption}</div>`;
       }
       popup += `<div style="margin-top:8px"><a href="event.html?id=${encodeURIComponent(
-        id
+        id,
       )}">Open event</a></div>`;
       m.bindPopup(popup);
       markersById.current.set(String(id), m);
@@ -349,11 +416,11 @@ export default function MapPage() {
         /* ignore fit errors */
       }
     }
-  }, [events]);
+  }, [events, leafletReady]);
 
   // Center on ?center=<id> once markers are ready
   useEffect(() => {
-    if (!leafletReady.current) return;
+    if (!leafletReady) return;
     const centerId = searchParams.get("center");
     if (!centerId) return;
     const m = markersById.current.get(String(centerId));
@@ -373,7 +440,7 @@ export default function MapPage() {
         } catch (err) {}
       }
     }
-  }, [events, searchParams]);
+  }, [events, searchParams, leafletReady]);
 
   const circuits = useMemo(() => {
     const set = new Set();
@@ -385,7 +452,8 @@ export default function MapPage() {
     let list = events;
     if (circuitFilter) {
       list = list.filter(
-        (ev) => (ev.circuit || "").toLowerCase() === circuitFilter.toLowerCase()
+        (ev) =>
+          (ev.circuit || "").toLowerCase() === circuitFilter.toLowerCase(),
       );
     }
     if (search) {
@@ -394,7 +462,9 @@ export default function MapPage() {
         const name = (ev.name || ev.id || "").toLowerCase();
         const circuit = (ev.circuit || "").toLowerCase();
         const loc = (getEventLocation(ev) || "").toLowerCase();
-        return name.includes(term) || circuit.includes(term) || loc.includes(term);
+        return (
+          name.includes(term) || circuit.includes(term) || loc.includes(term)
+        );
       });
     }
     return list;
@@ -438,10 +508,35 @@ export default function MapPage() {
       {error && <div className="text-red-600">{error}</div>}
 
       <div className="grid lg:grid-cols-[minmax(0,1fr)_360px] gap-4 items-start">
-        <Card className="overflow-hidden" style={{ height: "70vh", display: "flex", flexDirection: "column", backgroundColor: "#f5f5f5" }}>
-          <div id="map" style={{ width: "100%", flex: "1", position: "relative", zIndex: 1, backgroundColor: "#e8e8e8" }}>
+        <Card
+          className="overflow-hidden"
+          style={{
+            height: "70vh",
+            display: "flex",
+            flexDirection: "column",
+            backgroundColor: "#f5f5f5",
+          }}
+        >
+          <div
+            id="map"
+            style={{
+              width: "100%",
+              flex: "1",
+              position: "relative",
+              zIndex: 1,
+              backgroundColor: "#e8e8e8",
+            }}
+          >
             {loading ? (
-              <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 1000 }}>
+              <div
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  zIndex: 1000,
+                }}
+              >
                 Loading map…
               </div>
             ) : null}
@@ -450,7 +545,9 @@ export default function MapPage() {
 
         <Card>
           <CardHeader className="pb-2">
-            <div className="font-semibold">Events ({filteredEvents.length})</div>
+            <div className="font-semibold">
+              Events ({filteredEvents.length})
+            </div>
           </CardHeader>
           <CardContent className="grid gap-3 pt-0">
             <input
@@ -465,19 +562,21 @@ export default function MapPage() {
               onChange={(e) => setCircuitFilter(e.target.value)}
               className="w-full px-3 py-2 border border-input rounded-md bg-background"
             >
-            <option value="">All circuits</option>
-            {circuits.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
+              <option value="">All circuits</option>
+              {circuits.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
             </select>
 
             <div className="grid gap-2 max-h-[65vh] overflow-auto pr-1">
               {loading ? (
                 <div className="text-gray-600">Loading events…</div>
               ) : filteredEvents.length === 0 ? (
-                <div className="text-gray-600">No events match the filters.</div>
+                <div className="text-gray-600">
+                  No events match the filters.
+                </div>
               ) : (
                 filteredEvents.map((ev) => {
                   const id = ev.id || ev._id || ev.key;
@@ -513,8 +612,15 @@ export default function MapPage() {
                         )}
                       </div>
                       <div className="flex flex-col gap-1">
-                        <Button asChild variant="link" size="sm" className="h-auto p-0">
-                          <Link to={`/event/${encodeURIComponent(id)}`}>Details</Link>
+                        <Button
+                          asChild
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0"
+                        >
+                          <Link to={`/event/${encodeURIComponent(id)}`}>
+                            Details
+                          </Link>
                         </Button>
                         <Button
                           type="button"
