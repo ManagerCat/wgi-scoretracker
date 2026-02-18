@@ -6,7 +6,12 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "run": "node index.js"
+    "run": "node index.js",
+    "gipa": "node -e \"import('./circuits/gipa.js').then(m=>m.getScore().then(r=>{ console.log('gipa events', r.length); process.exit(0);}).catch(e=>{ console.error(e); process.exit(1); }))\"",
+    "ffcc": "node -e \"import('./circuits/ffcc.js').then(m=>m.getScore().then(r=>{ console.log('ffcc events', r.length); process.exit(0);}).catch(e=>{ console.error(e); process.exit(1); }))\"",
+    "ncpa": "node -e \"import('./circuits/ncpa.js').then(m=>m.getScore().then(r=>{ console.log('ncpa events', r.length); process.exit(0);}).catch(e=>{ console.error(e); process.exit(1); }))\"",
+    "scpa": "node -e \"import('./circuits/scpa.js').then(m=>m.getScore().then(r=>{ console.log('scpa events', r.length); process.exit(0);}).catch(e=>{ console.error(e); process.exit(1); }))\"",
+    "wgi": "node -e \"import('./circuits/wgi.js').then(m=>m.getScore().then(r=>{ console.log('wgi events', r.length); process.exit(0);}).catch(e=>{ console.error(e); process.exit(1); }))\""
   },
   "keywords": [],
   "author": "",
