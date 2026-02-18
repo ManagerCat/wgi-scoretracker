@@ -80,13 +80,6 @@ export default async function eventUploader(db, circuit) {
 
   for (const event of events) {
     if (event) {
-      // idk why this is here ngl im 99% positive it's unnecessary but eh
-      // try {
-      //     const docRef = await eventsDB.add(event)
-      //     console.log(`WGI ${event.name} written with ID: `, docRef.id);
-      // } catch (error) {
-      //     console.error(`Error writing WGI ${event.name} to Firestore:`, error);
-      // }
       let eventId;
       let dbEvent = await eventsDB
         .where(Filter.where("name", "==", event.name))
@@ -149,7 +142,10 @@ export default async function eventUploader(db, circuit) {
             else delete event.date;
           }
         } catch (e) {
-          // non-fatal, continue with original event
+          console.error(
+            `Event Uploader: Error sanitizing date fields for event "${event.name}":`,
+            e,
+          );
         }
 
         // Process recaps and add group IDs BEFORE adding the event
@@ -328,7 +324,13 @@ export default async function eventUploader(db, circuit) {
             if (sd) event.date = sd;
             else delete event.date;
           }
-        } catch (e) {}
+        } catch (e) {
+          console.error(
+            `Event Uploader: Error sanitizing date fields for event "${event.name}":`,
+            e,
+          );
+          // non-fatal, continue with original event
+        }
 
         // Process recaps and add group IDs BEFORE updating the event
         for (const recap of event.recaps) {

@@ -1,3 +1,14 @@
+import fs from "fs";
+import { fileURLToPath } from "url";
+import path from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const geocodekey = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "../geocodekey.json"), "utf-8"),
+);
+
 // In-memory cache for geocoding results
 const geocodeCache = new Map();
 
@@ -29,7 +40,7 @@ export async function geocodeLocation(location) {
     return cached;
   }
 
-  const apiKey = require("./geocodekey.json").key;
+  const apiKey = geocodekey.key;
 
   try {
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
