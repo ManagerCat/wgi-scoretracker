@@ -23,7 +23,6 @@ import {
   formatDateRange,
   getEventDateText,
   getEventLocation,
-  getEventTotalCaption,
   normalizeDate,
   slugify,
 } from "../utils";
@@ -185,11 +184,6 @@ export default function EventPage({ eventId: propId }) {
           {recapRange && (
             <div className="text-sm text-muted-foreground">
               Recap dates: {recapRange}
-            </div>
-          )}
-          {getEventTotalCaption(eventDoc) != null && (
-            <div className="text-sm text-muted-foreground">
-              Total caption: {getEventTotalCaption(eventDoc)}
             </div>
           )}
         </CardContent>

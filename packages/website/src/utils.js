@@ -118,18 +118,6 @@ export function getEventLocation(ev) {
   return "";
 }
 
-// Total caption stored on an event document (do not recompute)
-export function getEventTotalCaption(ev) {
-  if (!ev || typeof ev !== "object") return null;
-  if (Object.prototype.hasOwnProperty.call(ev, "total")) {
-    const v = ev.total;
-    if (v === "" || v === null || typeof v === "undefined") return null;
-    const n = Number(v);
-    return isNaN(n) ? v : n;
-  }
-  return null;
-}
-
 // Get total or subtotal score from a group object
 export function getGroupScore(g) {
   if (!g) return null;

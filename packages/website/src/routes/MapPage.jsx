@@ -8,7 +8,6 @@ import {
   getEventCoordinates,
   getEventDateText,
   getEventLocation,
-  getEventTotalCaption,
 } from "../utils";
 
 // Cache for circuit colors loaded from config
@@ -391,16 +390,14 @@ export default function MapPage() {
         : ev.name || ev.id;
       const dateText = getEventDateText(ev);
       const locText = coords.formatted_address || getEventLocation(ev) || "";
-      const totalCaption = getEventTotalCaption(ev);
+
       let popup = `<div style="font-weight:600">${title}</div>`;
       if (dateText || locText) {
         popup += `<div style="color:#444;font-size:12px">${dateText}${
           dateText && locText ? " — " : ""
         }${locText}</div>`;
       }
-      if (totalCaption !== null && typeof totalCaption !== "undefined") {
-        popup += `<div style="margin-top:6px" class="meta">Total caption: ${totalCaption}</div>`;
-      }
+
       popup += `<div style="margin-top:8px"><a href="event/${encodeURIComponent(
         id,
       )}">Open event</a></div>`;
@@ -579,13 +576,9 @@ export default function MapPage() {
                 </div>
               ) : (
                 filteredEvents.map((ev) => {
-                  const id = ev.id || ev._id || ev.key;
-                  const title = ev.circuit
-                    ? `${ev.circuit}: ${ev.name || ev.id}`
-                    : ev.name || ev.id;
+                  const id = ev.id;
                   const dateText = getEventDateText(ev);
                   const locText = getEventLocation(ev);
-                  const totalCaption = getEventTotalCaption(ev);
                   const recapDates = Array.isArray(ev.recaps)
                     ? ev.recaps.map((r) => r && r.date).filter(Boolean)
                     : [];
@@ -600,16 +593,17 @@ export default function MapPage() {
                     >
                       <div className="min-w-0">
                         <div className="font-semibold text-sm truncate">
-                          {title}
+                          {ev.name}
                         </div>
                         <div className="text-xs text-gray-600 truncate">
-                          {[dateRange, locText].filter(Boolean).join(" — ")}
+                          {ev.circuit}
                         </div>
-                        {totalCaption != null && (
-                          <div className="text-xs text-gray-700 mt-1">
-                            Total caption: {totalCaption}
-                          </div>
-                        )}
+                        <div className="text-xs text-gray-600 truncate">
+                          {dateRange}
+                        </div>
+                        <div className="text-xs text-gray-600 truncate">
+                          {locText}
+                        </div>
                       </div>
                       <div className="flex flex-col gap-1">
                         <Button
