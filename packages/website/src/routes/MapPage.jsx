@@ -401,7 +401,7 @@ export default function MapPage() {
       if (totalCaption !== null && typeof totalCaption !== "undefined") {
         popup += `<div style="margin-top:6px" class="meta">Total caption: ${totalCaption}</div>`;
       }
-      popup += `<div style="margin-top:8px"><a href="event.html?id=${encodeURIComponent(
+      popup += `<div style="margin-top:8px"><a href="event?id=${encodeURIComponent(
         id,
       )}">Open event</a></div>`;
       m.bindPopup(popup);
