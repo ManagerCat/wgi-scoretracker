@@ -490,7 +490,7 @@ export default function MapPage() {
   }
 
   return (
-    <main className="max-w-7xl mx-auto my-6 px-4 grid gap-4">
+    <main className="max-w-7xl mx-auto my-6 px-0 grid gap-4">
       <header className="flex items-center justify-between gap-3 mb-4">
         <div>
           <h1 className="text-xl font-semibold">Events Map</h1>
@@ -504,9 +504,9 @@ export default function MapPage() {
 
       {error && <div className="text-red-600">{error}</div>}
 
-      <div className="grid lg:grid-cols-[minmax(0,1fr)_360px] gap-4 items-start">
+      <div className="grid lg:grid-cols-[1fr_auto] gap-4 items-start">
         <Card
-          className="overflow-hidden"
+          className="overflow-hidden w-full, mx-0"
           style={{
             height: "70vh",
             display: "flex",
@@ -540,13 +540,13 @@ export default function MapPage() {
           </div>
         </Card>
 
-        <Card>
+        <Card className="w-max h-[70vh] flex flex-col">
           <CardHeader className="pb-2">
             <div className="font-semibold">
               Events ({filteredEvents.length})
             </div>
           </CardHeader>
-          <CardContent className="grid gap-3 pt-0">
+          <CardContent className="grid gap-3 pt-0 overflow-auto">
             <input
               type="search"
               placeholder="Search by name, circuit, or location"
@@ -567,7 +567,7 @@ export default function MapPage() {
               ))}
             </select>
 
-            <div className="grid gap-2 max-h-[65vh] overflow-auto pr-1">
+            <div className="grid gap-2 overflow-auto pr-1">
               {loading ? (
                 <div className="text-gray-600">Loading events…</div>
               ) : filteredEvents.length === 0 ? (
