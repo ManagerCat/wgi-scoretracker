@@ -17,4 +17,4 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WGISCOREAPP }}
           channelId: live
           projectId: wgiscoreapp
-          entrypoint: /packages/website
+          entrypoint: packages/website
