@@ -16,6 +16,7 @@ function parseSections(sections) {
 
   sections.forEach((section) => {
     const $ = cheerio.load(section);
+    const eventName = $("div:nth-child(3) > table > tbody > tr > td:nth-child(2) > div:nth-child(1)").text();
     const date = new Date(
       $(
         "div:nth-child(3) > table > tbody > tr > td:nth-child(2) > div:nth-child(3)"
@@ -75,6 +76,7 @@ function parseSections(sections) {
       ],
     });
     data.push({
+      name: eventName,
       division: division,
       captions: captions,
       groups: results.results,
