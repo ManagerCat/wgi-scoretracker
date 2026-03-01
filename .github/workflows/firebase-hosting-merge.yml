@@ -14,7 +14,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - run: npm install
+      - run: npm ci --include=optional
         working-directory: ./packages/website
       - run: npm run build
         working-directory: ./packages/website
@@ -24,4 +24,4 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WGISCOREAPP }}
           channelId: live
           projectId: wgiscoreapp
-          entrypoint: packages/website
+          entryPoint: packages/website
