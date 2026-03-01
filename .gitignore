@@ -144,3 +144,6 @@ wgiscoreapp-*.json
 
 # Google Maps API Key
 geocodekey.json
+
+# DS STORE
+.DS_Store
