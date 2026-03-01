@@ -1,0 +1,34 @@
+steps:
+# 1. Build the image using Buildpacks (Remote Build)
+- name: 'gcr.io/k8s-skaffold/pack'
+  args:
+    - 'build'
+    - 'gcr.io/$PROJECT_ID/wgi-scoretracker-api'
+    - '--builder'
+    - 'gcr.io/buildpacks/builder:v1' # Official Google Buildpacks builder
+  volumes:
+    - name: 'buildpacks-layers'
+      path: '/layers'
+    - name: 'buildpacks-cache'
+      path: '/cache'
+
+# 2. Deploy the built image to Cloud Run
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  id: 'deploy-cloud-run'
+  args:
+    - 'gcloud'
+    - 'run'
+    - 'deploy'
+    - 'wgi-scoretracker-api'
+    - '--image'
+    - 'gcr.io/$PROJECT_ID/wgi-scoretracker-api'
+    - '--region'
+    - 'us-central1'
+    - '--platform'
+    - 'managed'
+    - '--allow-unauthenticated'
+
+images:
+  - 'gcr.io/$PROJECT_ID/wgi-scoretracker-api'
+
+timeout: 1200s
