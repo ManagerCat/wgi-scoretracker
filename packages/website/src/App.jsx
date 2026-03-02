@@ -8,6 +8,7 @@ import {
   getEventDate,
   getEventLocation,
   getGroupScore,
+  normalizeDate,
 } from "./utils";
 
 function App() {
@@ -195,11 +196,20 @@ function App() {
     // Sort
     filtered = [...filtered].sort((a, b) => {
       if (groupSortBy === "score-desc" || groupSortBy === "score-asc") {
-        // console.log(a.scores[a.scores.length - 1].scores.Total);
-        const scoreA =
-          a.scores[a.scores.length - 1]?.scores?.Total ?? -Infinity;
-        const scoreB =
-          b.scores[b.scores.length - 1]?.scores?.Total ?? -Infinity;
+        const getLatestTotal = (g) => {
+          let latestDate = null;
+          let latestScore = null;
+          for (const s of (g.scores || [])) {
+            const date = normalizeDate(s.date);
+            if (date && (!latestDate || date > latestDate)) {
+              latestDate = date;
+              latestScore = s.scores;
+            }
+          }
+          return latestScore?.Total ?? -Infinity;
+        };
+        const scoreA = getLatestTotal(a);
+        const scoreB = getLatestTotal(b);
         const diff = scoreA - scoreB;
         return groupSortBy === "score-desc" ? -diff : diff;
       }
