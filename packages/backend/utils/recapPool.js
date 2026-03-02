@@ -5,7 +5,7 @@ import path from "path";
  * Worker-pool that dispatches recap parsing jobs to worker threads.
  */
 class RecapPool {
-  constructor(size = 3) {
+  constructor(size = 4) {
     this.size = size;
     this.workers = [];
     this.idle = [];
@@ -26,13 +26,13 @@ class RecapPool {
     worker._busy = false;
 
     worker.on("message", (msg) => {
-      // msg: { id, recaps } or { id, error }
-      const { id, recaps, error } = msg || {};
+      // msg: { id, recaps } or { id, competitions } or { id, error }
+      const { id, recaps, competitions, error } = msg || {};
       const job = this._inflight && this._inflight[id];
       if (job) {
         delete this._inflight[id];
         if (error) job.reject(new Error(error));
-        else job.resolve(recaps);
+        else job.resolve(recaps ?? competitions);
       }
       worker._busy = false;
       this.idle.push(worker);
@@ -73,7 +73,20 @@ class RecapPool {
   enqueue(url) {
     return new Promise((resolve, reject) => {
       const id = String(this.nextJobId++);
-      this.queue.push({ id, url, resolve, reject });
+      this.queue.push({ id, type: "recap", url, resolve, reject });
+      this._dispatch();
+    });
+  }
+
+  /**
+   * Enqueue a bridge (getCompetitions) request into the worker pool.
+   * @param {string} season - Season identifier
+   * @returns {Promise<string[]>} Resolves with an array of competition GUIDs
+   */
+  enqueueBridge(season) {
+    return new Promise((resolve, reject) => {
+      const id = String(this.nextJobId++);
+      this.queue.push({ id, type: "bridge", season, resolve, reject });
       this._dispatch();
     });
   }
@@ -144,8 +157,12 @@ class RecapPool {
     // track inflight
     this._inflight[job.id] = job;
     // send job to worker
-    console.log("Dispatcher: Sending job ", job.id, " to worker ", worker._id);
-    worker.postMessage({ id: job.id, url: job.url });
+    console.log("Dispatcher: Sending job ", job.id, " (", job.type, ") to worker ", worker._id);
+    if (job.type === "bridge") {
+      worker.postMessage({ id: job.id, type: "bridge", season: job.season });
+    } else {
+      worker.postMessage({ id: job.id, type: "recap", url: job.url });
+    }
   }
 }
 

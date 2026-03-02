@@ -1,8 +1,3 @@
-import { getScore as getSCPAScore } from "../circuits/scpa.js";
-import { getScore as getNCPAScore } from "../circuits/ncpa.js";
-import { getScore as getWGIScore } from "../circuits/wgi.js";
-import { getScore as getFFCCScore } from "../circuits/ffcc.js";
-import { getScore as getGIPAScore } from "../circuits/gipa.js";
 import { Filter } from "firebase-admin/firestore";
 import fs from "fs";
 import geocodeLocation from "./geocoder.js";
@@ -58,25 +53,7 @@ async function geocodeEvent(event) {
 export default async function eventUploader(db, event) {
   const eventsDB = db.collection("events");
   const groupsDB = db.collection("groups");
-  // var events;
 
-  // switch (circuit) {
-  //   case "WGI":
-  //     events = await getWGIScore();
-  //     break;
-  //   case "SCPA":
-  //     events = await getSCPAScore();
-  //     break;
-  //   case "NCPA":
-  //     events = await getNCPAScore();
-  //     break;
-  //   case "FFCC":
-  //     events = await getFFCCScore();
-  //     break;
-  //   case "GIPA":
-  //     events = await getGIPAScore();
-  //     break;
-  // }
 
   if (event) {
     let eventId;
@@ -151,8 +128,12 @@ export default async function eventUploader(db, event) {
       eventId = "temp"; // temporary ID for new event
       for (const recap of event.recaps) {
         if (!recap.division.startsWith("Percussion")) {
-          continue; // skip winds recaps
+          continue; // skip winds/cg recaps
         }
+        recap.division = recap.division.replace(/- /g, "");
+        recap.division = recap.division.replace("Marching ", "")
+        recap.division = recap.division.replace("High School ", "")
+        console.log(recap.division)
 
         for (const recapGroup of recap.groups) {
           var scores = Object.fromEntries(
