@@ -145,5 +145,10 @@ wgiscoreapp-*.json
 # Google Maps API Key
 geocodekey.json
 
+<<<<<<< Updated upstream
 # DS STORE
 .DS_Store
+=======
+# Backend Event Cache
+eventCache.json
+>>>>>>> Stashed changes
