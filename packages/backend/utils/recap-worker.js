@@ -16,6 +16,7 @@ function parseSections(sections) {
 
   sections.forEach((section) => {
     const $ = cheerio.load(section);
+    const eventName = $("div:nth-child(3) > table > tbody > tr > td:nth-child(2) > div:nth-child(1)").text();
     const date = new Date(
       $(
         "div:nth-child(3) > table > tbody > tr > td:nth-child(2) > div:nth-child(3)"
@@ -74,7 +75,12 @@ function parseSections(sections) {
         },
       ],
     });
+    //remove any groups wihout scores (e.g. DQs that are listed but not scored)
+    results.results = results.results.filter((r) => r.total > 0);
+    // );
+    // console.log(data)
     data.push({
+      name: eventName,
       division: division,
       captions: captions,
       groups: results.results,
@@ -111,6 +117,22 @@ export async function processRecap(recap) {
 
 export default processRecap;
 
+// ── Bridge helper (runs inside the worker thread) ──────────────────────
+const bridgeUrl =
+  "https://bridge.competitionsuite.com/api/orgscores/GetCompetitionsBySeason/jsonp?season=";
+
+async function fetchCompetitions(season) {
+  const response = await fetch(bridgeUrl + season, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+  });
+  const data = await response.json();
+  return data.competitions.map((c) => c.competitionGuid);
+}
+
 // Worker-mode: keep a persistent browser and reuse pages per job
 if (!isMainThread && parentPort) {
   let workerBrowser = null;
@@ -143,7 +165,24 @@ if (!isMainThread && parentPort) {
       return;
     }
 
-    const { id, url } = job || {};
+    const { id, type } = job || {};
+
+    // ── Bridge job: fetch competition GUIDs ──────────────────────────
+    if (type === "bridge") {
+      try {
+        const competitions = await fetchCompetitions(job.season);
+        parentPort.postMessage({ id, competitions });
+      } catch (err) {
+        parentPort.postMessage({
+          id,
+          error: err && err.message ? err.message : String(err),
+        });
+      }
+      return;
+    }
+
+    // ── Recap job (default): scrape a recap page ─────────────────────
+    const { url } = job || {};
     try {
       await ensureBrowser();
       const page = await workerBrowser.newPage();
