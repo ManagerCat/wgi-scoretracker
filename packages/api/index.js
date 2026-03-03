@@ -1,13 +1,7 @@
-import { initializeApp, cert } from "firebase-admin/app";
-import * as Credentials from "./wgiscoreapp-c0f8f08ebe54.json" with { type: "json" };
-const ServiceAccount = Credentials.default;
+import { initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-// process.env.FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080'
-initializeApp({
-  credential: cert(ServiceAccount),
-});
+initializeApp();
 
-// Initialize Firestore instance
 const db = getFirestore();
 
 // In-memory cache with TTL

@@ -389,7 +389,7 @@ export default function MapPage() {
         ? `${ev.circuit}: ${ev.name || ev.id}`
         : ev.name || ev.id;
       const dateText = getEventDateText(ev);
-      const locText = coords.formatted_address || getEventLocation(ev) || "";
+      const locText = getEventLocation(ev) || "";
 
       let popup = `<div style="font-weight:600">${title}</div>`;
       if (dateText || locText) {
