@@ -26,7 +26,7 @@ export function GroupCard({ group }) {
 
   // Date handling: support various Firestore JSON timestamp formats and aggregated _date
   const dateVal = normalizeDate(group && (group._date || group.date));
-  const dateStr = dateVal ? formatDate(dateVal) : "";
+  const dateStr = latestDate ? formatDate(latestDate) : "";
 
   return (
     <Link to={`/group/${id}`} className="block">
